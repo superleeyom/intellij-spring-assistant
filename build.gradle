@@ -4,7 +4,7 @@ import com.vladsch.flexmark.util.ast.Document
 
 buildscript {
     dependencies {
-        classpath 'com.vladsch.flexmark:flexmark:0.62.2' // '0.28.12'
+        classpath 'com.vladsch.flexmark:flexmark:0.62.2'
     }
 }
 
@@ -15,7 +15,7 @@ plugins {
 }
 
 group = 'in.oneton.idea.spring'
-version = '1.1.1'
+version = '1.2.0-RC.5'
 
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11

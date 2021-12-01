@@ -2,7 +2,6 @@ package in.oneton.idea.spring.assistant.plugin.suggestion.completion;
 
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.lang.properties.psi.impl.PropertyKeyImpl;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.patterns.PlatformPatterns;
@@ -37,18 +36,18 @@ import static java.util.stream.Collectors.joining;
 public class PropertiesReferenceContributor extends PsiReferenceContributor {
 
     @Override
-    public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
+    public void registerReferenceProviders(@NotNull final PsiReferenceRegistrar registrar) {
 
         registrar.registerReferenceProvider(PlatformPatterns.psiElement(PropertyKeyImpl.class), new PsiReferenceProvider() {
             @NotNull
             @Override
-            public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
+            public PsiReference @NotNull [] getReferencesByElement(@NotNull final PsiElement element, @NotNull final ProcessingContext context) {
 
-                PropertyKeyImpl property = (PropertyKeyImpl) element;
+                final PropertyKeyImpl property = (PropertyKeyImpl) element;
 
-                String text = property.getText();
+                final String text = property.getText();
 
-                var range = new TextRange(0, text.length());
+                final var range = new TextRange(0, text.length());
 
                 return new PsiReference[]{new PropertiesReference(element, range)};
             }
@@ -59,42 +58,42 @@ public class PropertiesReferenceContributor extends PsiReferenceContributor {
 
     static class PropertiesReference extends PsiReferenceBase<PsiElement> implements PsiPolyVariantReference {
 
-        public PropertiesReference(PsiElement element, TextRange rangeInElement) {
+        public PropertiesReference(final PsiElement element, final TextRange rangeInElement) {
             super(element, rangeInElement);
         }
 
         @NotNull
         @Override
-        public ResolveResult @NotNull [] multiResolve(boolean incompleteCode) {
+        public ResolveResult @NotNull [] multiResolve(final boolean incompleteCode) {
 
-            var project = this.myElement.getProject();
+            final var project = this.myElement.getProject();
 
-            PsiFile file = this.myElement.getContainingFile();
+            final PsiFile file = this.myElement.getContainingFile();
 
-            SuggestionService service = ServiceManager.getService(project, SuggestionService.class);
+            final var service = project.getService(SuggestionService.class);
 
-            String value = this.myElement.getText();
+            final String value = this.myElement.getText();
 
-            Module module = findModule(this.myElement);
+            final Module module = findModule(this.myElement);
 
-            List<String> ancestralKey = GenericUtil.getAncestralKey(value);
+            final List<String> ancestralKey = GenericUtil.getAncestralKey(value);
 
             if (CollectionUtils.isEmpty(ancestralKey)) {
                 return new ResolveResult[0];
             }
 
-            List<SuggestionNode> matchedNodesFromRootTillLeaf =
+            final List<SuggestionNode> matchedNodesFromRootTillLeaf =
                     service.findMatchedNodesRootTillEnd(module, ancestralKey);
 
             if (matchedNodesFromRootTillLeaf != null) {
 
-                SuggestionNode target = matchedNodesFromRootTillLeaf.get(matchedNodesFromRootTillLeaf.size() - 1);
+                final SuggestionNode target = matchedNodesFromRootTillLeaf.get(matchedNodesFromRootTillLeaf.size() - 1);
 
-                String targetNavigationPathDotDelimited =
+                final String targetNavigationPathDotDelimited =
                         matchedNodesFromRootTillLeaf.stream().map(v -> v.getNameForDocumentation(module))
                                 .collect(joining("."));
 
-                ReferenceProxyElement element = new ReferenceProxyElement(file.getManager(), file.getLanguage(),
+                final ReferenceProxyElement element = new ReferenceProxyElement(file.getManager(), file.getLanguage(),
                         targetNavigationPathDotDelimited, target, value);
 
                 return new ResolveResult[]{new PsiElementResolveResult(element)};
@@ -106,7 +105,7 @@ public class PropertiesReferenceContributor extends PsiReferenceContributor {
         @Nullable
         @Override
         public PsiElement resolve() {
-            ResolveResult[] resolveResults = this.multiResolve(false);
+            final ResolveResult[] resolveResults = this.multiResolve(false);
             return resolveResults.length == 1 ? resolveResults[0].getElement() : null;
         }
 
@@ -114,15 +113,15 @@ public class PropertiesReferenceContributor extends PsiReferenceContributor {
         @Override
         public Object @NotNull [] getVariants() {
 
-            var project = this.myElement.getProject();
+            final var project = this.myElement.getProject();
 
-            SuggestionService service = ServiceManager.getService(project, SuggestionService.class);
+            final var service = project.getService(SuggestionService.class);
 
-            Module module = findModule(this.myElement);
+            final Module module = findModule(this.myElement);
 
-            String origin = truncateIdeaDummyIdentifier(this.myElement);
+            final String origin = truncateIdeaDummyIdentifier(this.myElement);
 
-            int pos = origin.lastIndexOf(".");
+            final int pos = origin.lastIndexOf(".");
 
             String queryWithDotDelimitedPrefixes = origin;
 
@@ -134,7 +133,7 @@ public class PropertiesReferenceContributor extends PsiReferenceContributor {
                 }
             }
 
-            List<LookupElementBuilder> suggestions =
+            final List<LookupElementBuilder> suggestions =
                     service.findSuggestionsForQueryPrefix(module,
                             FileType.PROPERTIES, this.myElement,
                             GenericUtil.getAncestralKey(origin), queryWithDotDelimitedPrefixes,

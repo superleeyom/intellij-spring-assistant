@@ -37,11 +37,11 @@ class PropertiesCompletionProvider extends CompletionProvider<CompletionParamete
             return;
         }
 
-        Module module = PsiCustomUtil.findModule(element);
+        final Module module = PsiCustomUtil.findModule(element);
 
         var project = element.getProject();
 
-        SuggestionService service = ServiceManager.getService(project, SuggestionService.class);
+        final SuggestionService service = project.getService(SuggestionService.class);
 
         if (module == null || !service.canProvideSuggestions(module)) {
             return;

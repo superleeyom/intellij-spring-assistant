@@ -1,8 +1,10 @@
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
-import com.vladsch.flexmark.util.ast.Document
 
 buildscript {
+    repositories {
+        mavenCentral()
+    }
     dependencies {
         classpath 'com.vladsch.flexmark:flexmark:0.62.2'
     }
@@ -46,10 +48,10 @@ dependencies {
     implementation 'org.apache.commons:commons-collections4:4.4'
     implementation 'com.miguelfonseca.completely:completely-core:0.9.0'
 
-    testImplementation(platform('org.junit:junit-bom:5.8.2'))
-    testImplementation 'org.mockito:mockito-core:4.0.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation platform('org.junit:junit-bom:5.8.2'),
+            'org.junit.jupiter:junit-jupiter',
+            'org.junit.jupiter:junit-jupiter-api',
+            'org.mockito:mockito-core:4.1.0'
 }
 
 clean.doFirst {
@@ -78,24 +80,24 @@ patchPluginXml {
     changeNotes.set(provider { changeLogAsHtml() })
 }
 
+wrapper() {
+    gradleVersion = '7.3'
+    distributionUrl = distributionUrl.replace('bin', 'all')
+}
+
 String readmeXmlAsHtml() {
     final String readmeContent = new File(rootProject.uri('README.md')).text
     // since these images needs to shown from within intellij, lest put absolute urls so that the images & changelog will be visible
-            .replaceAll("help\\.gif", "https://raw.githubusercontent.com/eltonsandre/intellij-spring-assistant/" + version + "/help.gif")
-            .replaceAll("CHANGELOG.md", "https://github.com/eltonsandre/intellij-spring-assistant/blob/" + version + "/CHANGELOG.md")
+            .replaceAll("help\\.gif", "https://raw.githubusercontent.com/eltonsandre/intellij-spring-assistant/${version}/help.gif")
+            .replaceAll("CHANGELOG.md", "https://github.com/eltonsandre/intellij-spring-assistant/blob/${version}/CHANGELOG.md")
 
-    final Document readmeDocument = Parser.builder().build().parse(readmeContent)
+    final var readmeDocument = Parser.builder().build().parse(readmeContent)
     HtmlRenderer.builder().build().render(readmeDocument)
 }
 
 String changeLogAsHtml() {
-    Parser parser = Parser.builder().build()
-    HtmlRenderer renderer = HtmlRenderer.builder().build()
-    Document changeLogDocument = parser.parse(file(rootProject.uri('CHANGELOG.md')).text)
+    var parser = Parser.builder().build()
+    var renderer = HtmlRenderer.builder().build()
+    var changeLogDocument = parser.parse(file(rootProject.uri('CHANGELOG.md')).text)
     renderer.render(changeLogDocument)
-}
-
-wrapper() {
-    gradleVersion = '7.3'
-    distributionUrl = distributionUrl.replace('bin', 'all')
 }

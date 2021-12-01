@@ -4,7 +4,6 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiComment;
@@ -35,15 +34,15 @@ class YamlCompletionProvider extends CompletionProvider<CompletionParameters> {
     protected void addCompletions(@NotNull final CompletionParameters completionParameters,
                                   final @NotNull ProcessingContext processingContext, @NotNull final CompletionResultSet resultSet) {
 
-        PsiElement element = completionParameters.getPosition();
+        final PsiElement element = completionParameters.getPosition();
         if (element instanceof PsiComment) {
             return;
         }
 
-        Project project = element.getProject();
-        Module module = findModule(element);
+        final Project project = element.getProject();
+        final Module module = findModule(element);
 
-        SuggestionService service = ServiceManager.getService(project, SuggestionService.class);
+        final var service = project.getService(SuggestionService.class);
 
         if ((module == null || !service.canProvideSuggestions(module))) {
             return;
@@ -51,15 +50,15 @@ class YamlCompletionProvider extends CompletionProvider<CompletionParameters> {
 
         Set<String> siblingsToExclude = null;
 
-        PsiElement elementContext = element.getContext();
-        PsiElement parent = requireNonNull(elementContext).getParent();
+        final PsiElement elementContext = element.getContext();
+        final PsiElement parent = requireNonNull(elementContext).getParent();
         if (parent instanceof YAMLSequence) {
             // lets force user to create array element prefix before he can ask for suggestions
             return;
         }
         if (parent instanceof YAMLSequenceItem) {
 
-            for (PsiElement child : parent.getParent().getChildren()) {
+            for (final PsiElement child : parent.getParent().getChildren()) {
                 if (child != parent) {
 
                     if (child instanceof YAMLSequenceItem) {
@@ -86,9 +85,9 @@ class YamlCompletionProvider extends CompletionProvider<CompletionParameters> {
             }
         }
 
-        List<LookupElementBuilder> suggestions;
+        final List<LookupElementBuilder> suggestions;
         // For top level element, since there is no parent parentKeyValue would be null
-        String queryWithDotDelimitedPrefixes = truncateIdeaDummyIdentifier(element);
+        final String queryWithDotDelimitedPrefixes = truncateIdeaDummyIdentifier(element);
 
         List<String> ancestralKeys = null;
         PsiElement context = elementContext;
@@ -112,7 +111,7 @@ class YamlCompletionProvider extends CompletionProvider<CompletionParameters> {
     }
 
     @NotNull
-    private Set<String> getNewIfNotPresent(@Nullable Set<String> siblingsToExclude) {
+    private Set<String> getNewIfNotPresent(@Nullable final Set<String> siblingsToExclude) {
         if (siblingsToExclude == null) {
             return new THashSet<>();
         }
